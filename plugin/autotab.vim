@@ -92,11 +92,11 @@ fun! <SID>untabify()
 endfun
 
 fun! <SID>DetectIndent()
-	let l:has_leading_tabs				= 0
-	let l:has_leading_spaces			= 0
+	let l:has_leading_tabs = 0
+	let l:has_leading_spaces = 0
 	let l:shortest_leading_spaces_run = 0
-	let l:longest_leading_spaces_run	= 0
-	let l:max_lines						= 1024
+	let l:longest_leading_spaces_run = 0
+	let l:max_lines = 1024
 	if exists("g:detectindent_max_lines_to_analyse")
 		let l:max_lines = g:detectindent_max_lines_to_analyse
 	endif
