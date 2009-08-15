@@ -54,13 +54,17 @@ fun! <SID>tabify()
 	if ! b:detected_tab_width
 		return
 	endif
-	let l:sub_cmd = "silent %s@^\\t*" .
-		\"\\zs" .
-		\"\\( \\{" . b:detected_tab_width . "}\\)\\+" .
-		\"@\\=repeat(\"\\t\", " .
-			\"strlen(submatch(0)) / ". b:detected_tab_width .")@e"
+	let l:sub_cmd = "substitute(" .
+		\"v:val, " .
+		\"'" . '^\t*' .
+			\'\zs' .
+			\'\( \{' . b:detected_tab_width . '}\)\+' . "', " .
+		\"'" . '\=repeat("\t", ' .
+			\'strlen(submatch(0)) / '. b:detected_tab_width .')' . "'" . ', "")'
+
 	call <SID>debug(l:sub_cmd)
-	execute l:sub_cmd
+	call setline(1, map(getline(1,"$"), l:sub_cmd))
+	
 endfun
 
 " let g:autotab_debug = 1
@@ -75,13 +79,16 @@ fun! <SID>untabify()
 	if ! b:detected_tab_width
 		return
 	endif
-	let l:sub_cmd = "silent %s@^ *" .
-		\"\\zs" .
-		\"\\t\\+" .
-		\"@\\=repeat(\" \", " .
-			\"strlen(submatch(0)) * ". b:detected_tab_width .")@e"
+	let l:sub_cmd = "substitute(" .
+		\"v:val, " .
+		\"'" . '^ *' .
+			\'\zs' .
+			\'\t\+' . "', " .
+		\"'" . '\=repeat(" ", ' .
+			\'strlen(submatch(0)) * '. b:detected_tab_width .')' . "'" . ', "")'
+
 	call <SID>debug(l:sub_cmd)
-	execute(l:sub_cmd)
+	call setline(1, map(getline(1,"$"), l:sub_cmd))
 endfun
 
 fun! <SID>DetectIndent()
@@ -159,5 +166,4 @@ fun! <SID>AutoTab()
 endfun
 
 command! -nargs=0 Autotab call <SID>AutoTab()
-
 
