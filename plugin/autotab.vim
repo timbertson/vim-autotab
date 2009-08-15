@@ -44,7 +44,7 @@ endfun
 
 fun! <SID>detectTabs()
 	let b:detected_tab_width = <SID>DetectIndent()
-	" echo(s:detected_tab_width)
+	call <SID>debug(b:detected_tab_width)
 endfun
 
 fun! <SID>tabify()
@@ -54,16 +54,34 @@ fun! <SID>tabify()
 	if ! b:detected_tab_width
 		return
 	endif
-	execute("%s/^\\t*\\zs \\{" . b:detected_tab_width . "}/\\t/g")
+	let l:sub_cmd = "silent %s@^\\t*" .
+		\"\\zs" .
+		\"\\( \\{" . b:detected_tab_width . "}\\)\\+" .
+		\"@\\=repeat(\"\\t\", " .
+			\"strlen(submatch(0)) / ". b:detected_tab_width .")@e"
+	call <SID>debug(l:sub_cmd)
+	execute l:sub_cmd
+endfun
+
+" let g:autotab_debug = 1
+" ^ to turn on debugging
+fun! <SID>debug(s)
+	if exists("g:autotab_debug") && g:autotab_debug
+		echo(a:s)
+	endif
 endfun
 
 fun! <SID>untabify()
 	if ! b:detected_tab_width
 		return
 	endif
-	let b:replacement = repeat(" ", b:detected_tab_width)
-	" echo s:detected_tab_width
-	execute("%s/^ *\\zs\\t/" . b:replacement . "/g")
+	let l:sub_cmd = "silent %s@^ *" .
+		\"\\zs" .
+		\"\\t\\+" .
+		\"@\\=repeat(\" \", " .
+			\"strlen(submatch(0)) * ". b:detected_tab_width .")@e"
+	call <SID>debug(l:sub_cmd)
+	execute(l:sub_cmd)
 endfun
 
 fun! <SID>DetectIndent()
