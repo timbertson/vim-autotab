@@ -38,8 +38,10 @@ fun! <SID>IsCommentEnd(line)
 endfun
 
 fun! <SID>newFile()
-	call <SID>detectTabs()
-	call <SID>tabify()
+	"call <SID>detectTabs()
+	"call <SID>tabify()
+	" it's safer this way..
+	call UnAutotab()
 endfun
 
 fun! <SID>detectTabs()
@@ -64,7 +66,8 @@ fun! <SID>tabify()
 
 	call <SID>debug(l:sub_cmd)
 	call setline(1, map(getline(1,"$"), l:sub_cmd))
-	
+	" we've just saved or read the file, we haven't *actually* changed it..
+	set nomodified
 endfun
 
 " let g:autotab_debug = 1
@@ -159,11 +162,18 @@ fun! <SID>DetectIndent()
 endfun
 
 fun! <SID>AutoTab()
-	autocmd BufReadPost * call <SID>newFile()
-	autocmd BufWritePost,FileWritePost,FileAppendPost * call <SID>tabify()
-	autocmd BufWritePre,FileWritePre,FileAppendPre * call <SID>untabify()
+	autocmd BufReadPost <buffer> call <SID>newFile()
+	autocmd BufWritePost,FileWritePost,FileAppendPost <buffer> call <SID>tabify()
+	autocmd BufWritePre,FileWritePre,FileAppendPre <buffer> call <SID>untabify()
 	call <SID>tabify()
 endfun
 
+fun! <SID>UnAutotab()
+	<SID>untabify()
+	" remove all buffer-local autocommands
+	autocmd! * <buffer>
+endfun
+
 command! -nargs=0 Autotab call <SID>AutoTab()
+command! -nargs=0 UnAutotab call <SID>UnAutotab()
 
