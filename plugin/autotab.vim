@@ -38,10 +38,8 @@ fun! <SID>IsCommentEnd(line)
 endfun
 
 fun! <SID>newFile()
-	"call <SID>detectTabs()
-	"call <SID>tabify()
-	" it's safer this way..
-	call UnAutotab()
+	call <SID>detectTabs()
+	call <SID>tabify()
 endfun
 
 fun! <SID>detectTabs()
@@ -54,6 +52,7 @@ fun! <SID>tabify()
 		call <SID>detectTabs()
 	endif
 	if ! b:detected_tab_width
+		call <SID>debug("no action - looks like a tabbed file")
 		return
 	endif
 	let l:sub_cmd = "substitute(" .
@@ -162,16 +161,16 @@ fun! <SID>DetectIndent()
 endfun
 
 fun! <SID>AutoTab()
-	autocmd BufReadPost <buffer> call <SID>newFile()
-	autocmd BufWritePost,FileWritePost,FileAppendPost <buffer> call <SID>tabify()
-	autocmd BufWritePre,FileWritePre,FileAppendPre <buffer> call <SID>untabify()
+	autocmd AutoTab BufReadPost <buffer> call <SID>newFile()
+	autocmd AutoTab BufWritePost,FileWritePost,FileAppendPost <buffer> call <SID>tabify()
+	autocmd AutoTab BufWritePre,FileWritePre,FileAppendPre <buffer> call <SID>untabify()
 	call <SID>tabify()
 endfun
 
 fun! <SID>UnAutotab()
 	<SID>untabify()
 	" remove all buffer-local autocommands
-	autocmd! * <buffer>
+	autocmd! AutoTab <buffer>
 endfun
 
 command! -nargs=0 Autotab call <SID>AutoTab()
