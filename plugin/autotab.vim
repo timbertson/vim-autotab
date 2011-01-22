@@ -48,7 +48,7 @@ fun! <SID>detectTabs()
 endfun
 
 fun! <SID>tabify()
-	if ! exists("s:detected_tab_width")
+	if ! exists("b:detected_tab_width")
 		call <SID>detectTabs()
 	endif
 	if ! b:detected_tab_width
@@ -160,19 +160,37 @@ fun! <SID>DetectIndent()
 	endif
 endfun
 
-fun! <SID>AutoTab()
-	autocmd AutoTab BufReadPost <buffer> call <SID>newFile()
-	autocmd AutoTab BufWritePost,FileWritePost,FileAppendPost <buffer> call <SID>tabify()
-	autocmd AutoTab BufWritePre,FileWritePre,FileAppendPre <buffer> call <SID>untabify()
+fun! <SID>AutoTab(...)
+	if a:0 == 1
+		let b:detected_tab_width = a:1
+	endif
+	augroup Autotab
+		autocmd!
+		autocmd BufReadPost,BufEnter * call <SID>newFile()
+		autocmd BufWritePost,FileWritePost,FileAppendPost * call <SID>tabify()
+		autocmd BufWritePre,FileWritePre,FileAppendPre * call <SID>untabify()
+	augroup END
 	call <SID>tabify()
+	let b:_oldtabstop=&l:tabstop
+	let b:_oldshiftwidth=&l:shiftwidth
+	let b:_oldsofttabstop=&l:softtabstop
+
+	let &l:tabstop=b:detected_tab_width
+	let &l:shiftwidth=b:detected_tab_width
+	let &l:softtabstop=b:detected_tab_width
 endfun
 
 fun! <SID>UnAutotab()
-	<SID>untabify()
-	" remove all buffer-local autocommands
-	autocmd! AutoTab <buffer>
+	call <SID>untabify()
+	" remove all autocommands
+	augroup Autotab
+		autocmd!
+	augroup END
+	let &l:tabstop=b:_oldtabstop
+	let &l:shiftwidth=b:_oldshiftwidth
+	let &l:softtabstop=b:_oldsofttabstop
 endfun
 
-command! -nargs=0 Autotab call <SID>AutoTab()
+command! -nargs=? Autotab call <SID>AutoTab(<args>)
 command! -nargs=0 UnAutotab call <SID>UnAutotab()
 
